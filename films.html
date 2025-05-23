@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Wars Database - Films</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('https://i.imgur.com/XXXXXXXXX.jpg'); /* Replace with a Star Wars background image URL */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #f0f0f0; /* Light text color */
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark background for content */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #ffc107; /* Gold color for titles */
+        }
+        .data-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent card background */
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            backdrop-filter: blur(5px); /* Apply a blur effect */
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        .card-detail {
+            margin-bottom: 0.25rem;
+            color: #ddd;
+        }
+        .search-results {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+        .property-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            list-style: none;
+        }
+
+        nav ul li a {
+            color: #ffc107;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center my-8 text-gray-800">Star Wars Database - Films</h1>
+
+        <nav class="mb-8">
+            <ul>
+                <li><a href="films.html">Films</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="planets.html">Planets</a></li>
+                <li><a href="species.html">Species</a></li>
+                <li><a href="starships.html">Starships</a></li>
+                <li><a href="vehicles.html">Vehicles</a></li>
+            </ul>
+        </nav>
+
+        <section id="films" class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-2xl font-semibold text-gray-700">Films</h2>
+                <input type="text" id="films-search" class="p-2 border rounded text-gray-700" placeholder="Search Films">
+            </div>
+            <div id="films-results" class="search-results">
+                <!-- Film search results will be inserted here -->
+            </div>
+            <div id="films-data" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Film data will be inserted here -->
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const apiEndpoints = {
+            films: "https://swapi.tech/api/films",
+        };
+
+        async function fetchData(url) {
+            try {
+                console.log('Fetching data from:', url);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('Data fetched:', data);
+                return data.result;
+            } catch (error) {
+                console.error("Fetching error:", error);
+                return [];
+            }
+        }
+
+        function displayData(category, data) {
+            console.log('Displaying data for:', category, data);
+            const containerId = `${category}-data`;
+            const container = document.getElementById(containerId);
+            const resultsContainer = document.getElementById(`${category}-results`);
+
+            if (!container) {
+                console.error(`Container with ID ${containerId} not found`);
+                return;
+            }
+
+             if (!resultsContainer) {
+                console.error(`Results container with ID ${category}-results not found`);
+                return;
+            }
+
+            container.innerHTML = ''; // Clear existing data
+            resultsContainer.innerHTML = ''; // Clear existing search results
+
+            if (data.length === 0) {
+                resultsContainer.innerHTML = '<p>No data available.</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card p-4 rounded shadow-md bg-white';
+
+                let cardTitle = item.name || item.title || '';
+                 if (category === 'people') {
+                    cardTitle = item.name || item.name || '';
+                } else {
+                    cardTitle = item.name || item.title || '';
+                }
+                let cardContent = `<h3 class="text-xl font-semibold mb-2">${cardTitle}</h3>`;
+
+                // Add details based on the category
+                for (const key in item.properties) {
+                    if (item.properties.hasOwnProperty(key)) {
+                        let value = item.properties[key];
+                        if (value === undefined || value === null) {
+                            value = '';
+                        }
+                        cardContent += `<div class="property-box"><p class="text-gray-600">${key}: ${value}</p></div>`;
+                    }
+                }
+
+                card.innerHTML = cardContent;
+                resultsContainer.appendChild(card); // Append to the results container
+            });
+        }
+
+        async function loadAndDisplayData(category) {
+            const searchInput = document.getElementById(`${category}-search`);
+            let currentTimeout;
+
+            searchInput.addEventListener('input', (event) => {
+                const searchTerm = event.target.value.trim();
+                console.log('Search term:', searchTerm);
+
+                // Debounce the API call
+                clearTimeout(currentTimeout);
+                currentTimeout = setTimeout(async () => {
+                    const url = `${apiEndpoints[category]}?name=${searchTerm}`;
+                    console.log('API URL:', url);
+                    const data = await fetchData(url);
+                    displayData(category, data);
+                }, 300); // 300ms delay
+            });
+
+            // Initial display of all data (no search term)
+            const initialUrl = apiEndpoints[category];
+            console.log('Initial API URL:', initialUrl);
+            const initialData = await fetchData(url);
+            displayData(category, initialData);
+        }
+
+
+        async function loadAllData() {
+            for (const category in apiEndpoints) {
+                if (apiEndpoints.hasOwnProperty(category)) {
+                    loadAndDisplayData(category);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAndDisplayData('films');
+        });
+    </script>
+</body>
+</html>
